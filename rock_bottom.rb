@@ -1,5 +1,4 @@
-input_file = ARGV[0]
-fin = File.open(input_file, 'r')
+Position = Struct.new(:row, :column)
 
 class Cave
   def initialize(input)
@@ -9,12 +8,12 @@ class Cave
     end
   end
 
-  def get_square(row, column)
-    @map[row][column]
+  def get_square(position)
+    @map[position.row][position.column]
   end
 
-  def water_square(row, column)
-    @map[row][column] = '~'
+  def water_square(position)
+    @map[position.row][position.column] = '~'
   end
 
   def print_map
@@ -43,37 +42,32 @@ class Cave
   end
 end
 
+def fill_cave(iterations, cave, position)
+  return 0 if iterations == 0
+
+  square = cave.get_square(position)
+  return iterations unless square == ' '
+  cave.water_square(position)
+
+  remaining = fill_cave(iterations - 1, cave, Position.new(position.row + 1, position.column))
+  fill_cave(remaining, cave, Position.new(position.row, position.column + 1))
+end
+
+
+input_file = ARGV[0]
+fin = File.open(input_file, 'r')
 water_units = fin.gets.chomp.to_i
 fin.gets # blank line
 
 cave = Cave.new(fin)
 fin.close
 
-column_stack = []
-row = 1
-column = 0
-(water_units - 1).times do
-  #cave.print_map
-  #sleep(0.1)
+cave.print_map
 
-  while true
-    if cave.get_square(row+1, column) == ' '
-      # Found an empty space below, awesome
-      row += 1
-      cave.water_square(row, column)
-      column_stack.push(column)
-      break
-    elsif cave.get_square(row, column+1) == ' '
-      # Found an empty space to the right, awesome
-      column += 1
-      cave.water_square(row, column)
-      break
-    else
-      row -= 1
-      column = column_stack.pop
-    end
-  end
-end
+# Start in the next place we have to place water
+position = Position.new(1, 1) # Row, Column
+
+fill_cave(water_units-1, cave, position)
 
 cave.print_map
 
