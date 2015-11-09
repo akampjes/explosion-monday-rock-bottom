@@ -33,7 +33,13 @@ class Cave
 
   private
   def count_depth(column)
-    column.select {|x| x == '~' }.count
+    count = column.select {|x| x == '~' }.count
+
+    if column.join.include?(' #') && count != 0
+      '~'
+    else
+      count
+    end
   end
 end
 
@@ -41,13 +47,14 @@ water_units = fin.gets.chomp.to_i
 fin.gets # blank line
 
 cave = Cave.new(fin)
+fin.close
 
 column_stack = []
 row = 1
 column = 0
-(1...water_units).each do |unit|
-  cave.print_map
-  sleep(0.1)
+(water_units - 1).times do
+  #cave.print_map
+  #sleep(0.1)
 
   while true
     if cave.get_square(row+1, column) == ' '
@@ -67,6 +74,8 @@ column = 0
     end
   end
 end
+
+cave.print_map
 
 # calculate water levels for output
 depths = cave.count_depths
