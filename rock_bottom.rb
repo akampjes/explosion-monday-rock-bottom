@@ -8,11 +8,11 @@ class Cave
     end
   end
 
-  def get_square(position)
-    @map[position.row][position.column]
+  def water?(position)
+    @map[position.row][position.column] == ' '
   end
 
-  def water_square(position)
+  def fill_with_water(position)
     @map[position.row][position.column] = '~'
   end
 
@@ -44,13 +44,15 @@ end
 
 def fill_cave(iterations, cave, position)
   return 0 if iterations == 0
+  return iterations unless cave.water?(position)
 
-  square = cave.get_square(position)
-  return iterations unless square == ' '
-  cave.water_square(position)
+  cave.fill_with_water(position)
 
-  remaining = fill_cave(iterations - 1, cave, Position.new(position.row + 1, position.column))
-  fill_cave(remaining, cave, Position.new(position.row, position.column + 1))
+  fill_cave(
+    fill_cave(iterations - 1, cave, Position.new(position.row + 1, position.column)),
+    cave,
+    Position.new(position.row, position.column + 1)
+  )
 end
 
 
